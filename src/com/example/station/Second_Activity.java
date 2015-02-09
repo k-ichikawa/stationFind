@@ -18,6 +18,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,13 +30,17 @@ import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.TextView;
 
+
+
+
+
 public class Second_Activity extends Activity {
 	private TextView area, station = null;
 	Button air, map, send, top = null;
 	String name, line, town;
 	SharedPreferences p;
 	String latitude, longitude = null;
-	String requestURL, loadURL, cURL;
+	String requestURL,cURL;
 	WebView mWebview;
 	String param_edittext;
 	Task task = new Task();
@@ -43,7 +48,7 @@ public class Second_Activity extends Activity {
 	
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_second);
 		
@@ -59,8 +64,6 @@ public class Second_Activity extends Activity {
 		longitude = intent.getStringExtra("Lon");
 		requestURL = "http://map.simpleapi.net/stationapi?x=" + longitude
 				+ "&y=" + latitude + "&output=json";
-		task.execute(requestURL);
-		
 		p = PreferenceManager
 				.getDefaultSharedPreferences(this);
 
@@ -68,8 +71,9 @@ public class Second_Activity extends Activity {
 		WebSettings settings = mWebview.getSettings();
 		settings.setJavaScriptEnabled(true);
 		mWebview.setWebViewClient(new WebViewClient());
-		mWebview.loadUrl(loadURL);
-
+		
+		task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,requestURL);
+		
 		air.setOnClickListener(mButtonListener);
 		map.setOnClickListener(mButtonListener2);
 		send.setOnClickListener(mButtonListener3);
@@ -78,17 +82,14 @@ public class Second_Activity extends Activity {
 
 	private OnClickListener mButtonListener = new OnClickListener() {
 		public void onClick(View v) {
-			cURL = cURL + "&t=k";
-			mWebview.loadUrl(cURL);
-			cURL = cURL.substring(0, cURL.length() - 4);
+			System.out.println("web:"+mWebview);
+			mWebview.loadUrl(Global.gURL+"&t=k");
 		}
 	};
 
 	private OnClickListener mButtonListener2 = new OnClickListener() {
 		public void onClick(View v) {
-			cURL = cURL + "&t=m";
-			mWebview.loadUrl(cURL);
-			cURL = cURL.substring(0, cURL.length() - 4);
+			mWebview.loadUrl(Global.gURL+"&t=m");
 		}
 	};
 
@@ -114,7 +115,7 @@ public class Second_Activity extends Activity {
 	};
 	
 	@Override
-	protected void onDestroy() {
+	public void onDestroy() {
 		super.onDestroy();
 		task.cancel(true);
 
@@ -151,9 +152,9 @@ public class Second_Activity extends Activity {
 		return false;
 	}
 
-	protected class Task extends AsyncTask<String, String, String> {
+	public class Task extends AsyncTask<String, String, String> {
 		@Override
-		protected String doInBackground(String... params) {
+		public String doInBackground(String... params) {
 			HttpClient client = new DefaultHttpClient();
 			HttpGet get = new HttpGet(params[0]);
 			String rtn = "";
@@ -164,16 +165,20 @@ public class Second_Activity extends Activity {
 					byte[] result = EntityUtils.toByteArray(response
 							.getEntity());
 					rtn = new String(result, "UTF-8");
+					
 				}
 			} catch (Exception e) {
-
+				System.out.println("だめ");
 			}
+			System.out.println("rtn:"+rtn);
 			return rtn;
-
 		}
 
 		@Override
-		protected void onPostExecute(String result) {
+		public void onPostExecute (String result) {
+			int count = 0;
+			count++;
+			if(count==1){
 			try {
 				String jsonBase = "{\"root\":" + result + "}";
 				JSONObject json = new JSONObject(jsonBase);
@@ -183,15 +188,23 @@ public class Second_Activity extends Activity {
 				town = obj.getString("city");
 				area.setText(town);
 				station.setText(name + ":" + line);
-				loadURL = "https://maps.google.com/maps?saddr=" + latitude
-						+ "," + longitude + "&daddr=" + name + "&dirflg=w";
-				cURL = loadURL;
+				Global.gURL = "https://maps.google.com/maps?saddr=" + latitude
+								+ "," + longitude + "&daddr=" + name + "&dirflg=w";
+		
+				mWebview.loadUrl(Global.gURL);
 			} catch (JSONException e) {
 				area.setText("Json Error!!!" + e.getMessage());
 				e.printStackTrace();
 			}
+			}
+			System.out.println("カウント："+count);
+			
 		}
 
 	}
 
+}
+
+class Global{
+	public static String gURL;
 }
