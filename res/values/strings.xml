@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">最寄り駅探索　-もよたん-</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">setting</string>
+    <string name="facebook_appid">626495294145914</string>
+    <string name="cate_title">設定画面</string>
+    
+    
+
+</resources>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+  xmlns:android="http://schemas.android.com/apk/res/android">
+  <PreferenceCategory
+    android:title="@string/cate_title">
+    <EditTextPreference
+        android:key="edittext"
+        android:title="メールアドレス登録"
+        android:summary="エディットテキストサマリー"
+        android:dialogTitle="登録したいメールアドレスを入力して下さい"
+    />
+  </PreferenceCategory>
+</PreferenceScreen>
