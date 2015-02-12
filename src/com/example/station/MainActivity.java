@@ -119,6 +119,7 @@ public class MainActivity extends Activity {
 		public void onClick(View v) {
 	        if (locationManager != null) {
 	        	locationManager.removeUpdates(mLocationListener);
+	        	locationManager = null;
 	        }
         	locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 

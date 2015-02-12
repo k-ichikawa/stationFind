@@ -1,6 +1,8 @@
 package com.example.station;
 
 import java.net.HttpURLConnection;
+import java.util.List;
+import java.util.Locale;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
@@ -15,36 +17,37 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.TextView;
 
-
-
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 
 public class Second_Activity extends Activity {
 	private TextView area, station = null;
 	Button air, map, send, top = null;
-	String name, line, town;
+	String line, town;
 	SharedPreferences p;
 	String latitude, longitude = null;
 	String requestURL,cURL;
-	WebView mWebview;
 	String param_edittext;
 	Task task = new Task();
-	
+	final GoogleMap gMap=null;
+	Geocoder geo;
+	LatLng location,dest;
 	
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
@@ -66,14 +69,9 @@ public class Second_Activity extends Activity {
 				+ "&y=" + latitude + "&output=json";
 		p = PreferenceManager
 				.getDefaultSharedPreferences(this);
-
-		mWebview = (WebView) findViewById(R.id.webView);
-		WebSettings settings = mWebview.getSettings();
-		settings.setJavaScriptEnabled(true);
-		mWebview.setWebViewClient(new WebViewClient());
 		
 		task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,requestURL);
-		
+
 		air.setOnClickListener(mButtonListener);
 		map.setOnClickListener(mButtonListener2);
 		send.setOnClickListener(mButtonListener3);
@@ -82,14 +80,17 @@ public class Second_Activity extends Activity {
 
 	private OnClickListener mButtonListener = new OnClickListener() {
 		public void onClick(View v) {
-			System.out.println("web:"+mWebview);
-			mWebview.loadUrl(Global.gURL+"&t=k");
+			MapFragment fragment = ((MapFragment)getFragmentManager().findFragmentById(R.id.map));
+			final GoogleMap gMap = fragment.getMap();
+			gMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
 		}
 	};
 
 	private OnClickListener mButtonListener2 = new OnClickListener() {
 		public void onClick(View v) {
-			mWebview.loadUrl(Global.gURL+"&t=m");
+			MapFragment fragment = ((MapFragment)getFragmentManager().findFragmentById(R.id.map));
+			final GoogleMap gMap = fragment.getMap();
+			gMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 		}
 	};
 
@@ -101,7 +102,7 @@ public class Second_Activity extends Activity {
 			intent.putExtra(Intent.EXTRA_EMAIL, p.getString("edittext", "Unselected"));
 			intent.putExtra(Intent.EXTRA_SUBJECT, "最寄駅探索");
 			intent.putExtra(Intent.EXTRA_TEXT, "あなたの現在地は「" + town + "」、最寄駅は「"
-					+ name + "」、主な路線は「" + line + "」");
+					+ Global.name + "」、主な路線は「" + line + "」");
 			intent.setType("text/plain");
 			startActivity(intent);
 		}
@@ -118,13 +119,6 @@ public class Second_Activity extends Activity {
 	public void onDestroy() {
 		super.onDestroy();
 		task.cancel(true);
-
-		mWebview.stopLoading();
-		ViewGroup webParent = (ViewGroup) mWebview.getParent();
-		if (webParent != null) {
-			webParent.removeView(mWebview);
-		}
-		mWebview.destroy();
 	}
 
 	@Override
@@ -168,7 +162,7 @@ public class Second_Activity extends Activity {
 					
 				}
 			} catch (Exception e) {
-				System.out.println("だめ");
+				System.out.println("doInBackだめ");
 			}
 			System.out.println("rtn:"+rtn);
 			return rtn;
@@ -176,35 +170,64 @@ public class Second_Activity extends Activity {
 
 		@Override
 		public void onPostExecute (String result) {
-			int count = 0;
-			count++;
-			if(count==1){
+			
 			try {
 				String jsonBase = "{\"root\":" + result + "}";
 				JSONObject json = new JSONObject(jsonBase);
 				JSONObject obj = json.getJSONArray("root").getJSONObject(0);
-				name = obj.getString("name");
+				Global.name = obj.getString("name");
 				line = obj.getString("line");
 				town = obj.getString("city");
 				area.setText(town);
-				station.setText(name + ":" + line);
-				Global.gURL = "https://maps.google.com/maps?saddr=" + latitude
-								+ "," + longitude + "&daddr=" + name + "&dirflg=w";
-		
-				mWebview.loadUrl(Global.gURL);
+				station.setText(Global.name + ":" + line);
+				
+				
+				//Gmapsのインスタンス生成
+				MapFragment fragment = ((MapFragment)getFragmentManager().findFragmentById(R.id.map));
+				final GoogleMap gMap = fragment.getMap();
+				
+				
+				//初期位置設定
+				location = new LatLng(Double.parseDouble(latitude),Double.parseDouble(longitude));
+				dest = null;
+				gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location,17));
+				gMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+				gMap.setMyLocationEnabled(true);
+				System.out.println("駅名"+Global.name);
+				
+				//目的地設定
+				geo = new Geocoder(getBaseContext(), Locale.getDefault());
+				try{
+					List<Address> addressList = geo.getFromLocationName(Global.name, 1);
+					Address address = addressList.get(0);
+					double latitude2 = address.getLatitude();
+			        double longitude2 = address.getLongitude();
+			        dest = new LatLng(latitude2,longitude2);
+				}catch(Exception e){
+					System.out.println("noaddress");
+				}
+				
+				
+				MarkerOptions mOptions1 = new MarkerOptions();
+				MarkerOptions mOptions2 = new MarkerOptions();		
+				mOptions1.title("現在地");
+				mOptions2.title(Global.name);
+				mOptions1.position(location);
+				mOptions2.position(dest);
+				gMap.addMarker(mOptions1);
+				gMap.addMarker(mOptions2);
+			
+				
 			} catch (JSONException e) {
 				area.setText("Json Error!!!" + e.getMessage());
 				e.printStackTrace();
 			}
-			}
-			System.out.println("カウント："+count);
-			
 		}
-
 	}
-
 }
 
 class Global{
-	public static String gURL;
+	public static String name;
 }
+
+

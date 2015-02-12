@@ -133,6 +133,7 @@ int id image_moyori 0x7f0d0017
 int id image_moyotan 0x7f0d0018
 int id image_train 0x7f0d001a
 int id image_traincircle 0x7f0d0019
+int id map 0x7f0d0025
 int id match_parent 0x7f0d000e
 int id monochrome 0x7f0d0016
 int id none 0x7f0d0002
@@ -147,7 +148,6 @@ int id textArea 0x7f0d001e
 int id textSta 0x7f0d0020
 int id textView2 0x7f0d001f
 int id textView_touch 0x7f0d001b
-int id webView 0x7f0d0025
 int id wrap_content 0x7f0d000f
 int integer google_play_services_version 0x7f0a0000
 int layout activity_main 0x7f030000
@@ -193,6 +193,8 @@ int string create_calendar_title 0x7f080004
 int string decline 0x7f080003
 int string facebook_appid 0x7f080026
 int string hello_world 0x7f080024
+int string latitude 0x7f080028
+int string longitude 0x7f080029
 int string store_picture_message 0x7f080001
 int string store_picture_title 0x7f080000
 int string wallet_buy_button_place_holder 0x7f080022

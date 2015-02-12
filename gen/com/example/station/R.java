@@ -502,6 +502,7 @@ containing a value of this type.
         public static final int image_moyotan=0x7f0d0018;
         public static final int image_train=0x7f0d001a;
         public static final int image_traincircle=0x7f0d0019;
+        public static final int map=0x7f0d0025;
         public static final int match_parent=0x7f0d000e;
         public static final int monochrome=0x7f0d0016;
         public static final int none=0x7f0d0002;
@@ -516,7 +517,6 @@ containing a value of this type.
         public static final int textSta=0x7f0d0020;
         public static final int textView2=0x7f0d001f;
         public static final int textView_touch=0x7f0d001b;
-        public static final int webView=0x7f0d0025;
         public static final int wrap_content=0x7f0d000f;
     }
     public static final class integer {
@@ -643,6 +643,8 @@ containing a value of this type.
         public static final int decline=0x7f080003;
         public static final int facebook_appid=0x7f080026;
         public static final int hello_world=0x7f080024;
+        public static final int latitude=0x7f080028;
+        public static final int longitude=0x7f080029;
         public static final int store_picture_message=0x7f080001;
         public static final int store_picture_title=0x7f080000;
         /**  Text on a placeholder buy button when Google Play services is not
